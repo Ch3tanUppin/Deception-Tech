@@ -3,43 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DashBoard</title>
+    <title>Deception Technology Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f8f9fa;
-            color: #212529;
+            margin: 20px;
         }
-        #logs {
-            width: 80%;
-            height: 80vh;
-            margin: auto;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background: #fff;
-            overflow-y: scroll;
-            font-family: monospace;
+        .card {
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
-    <h1 style="text-align: center;">Adaptive System</h1>
-    <div id="logs"></div>
+    <div class="container">
+        <h1>Deception Technology Dashboard</h1>
+        
+        <!-- Deploy and Remove Honeypots -->
+        <div class="card">
+            <div class="card-header">
+                <h5>Honeypot Management</h5>
+            </div>
+            <div class="card-body">
+                <button id="deploy-honeypot" class="btn btn-primary">Deploy Honeypot</button>
+                <button id="remove-honeypot" class="btn btn-danger">Remove Honeypot</button>
+                <p id="honeypot-status" class="mt-3"></p>
+            </div>
+        </div>
+        
+        <!-- Capture and Analyze Traffic -->
+        <div class="card">
+            <div class="card-header">
+                <h5>Traffic Capture & Analysis</h5>
+            </div>
+            <div class="card-body">
+                <button id="capture-traffic" class="btn btn-success">Capture Traffic</button>
+                <p id="traffic-status" class="mt-3"></p>
+                <p id="traffic-info"></p>
+            </div>
+        </div>
+        
+        <!-- Logs Streaming -->
+        <div class="card">
+            <div class="card-header">
+                <h5>Live Honeypot Logs</h5>
+            </div>
+            <div class="card-body">
+                <div id="logs-container"></div>
+                <button id="refresh-logs" class="btn btn-info mt-3">Refresh Logs</button>
+            </div>
+        </div>
+    </div>
 
     <script>
-        const logsElement = document.getElementById('logs');
-        const eventSource = new EventSource('/logs');
+        $(document).ready(function() {
+            // Deploy Honeypot
+            $('#deploy-honeypot').click(function() {
+                $.ajax({
+                    url: '/deploy',
+                    method: 'POST',
+                    success: function(response) {
+                        $('#honeypot-status').text(response.message).addClass('text-success');
+                    },
+                    error: function() {
+                        $('#honeypot-status').text('Failed to deploy honeypot.').addClass('text-danger');
+                    }
+                });
+            });
 
-        eventSource.onmessage = function(event) {
-            logsElement.innerHTML += event.data + '<br>';
-            logsElement.scrollTop = logsElement.scrollHeight; // Auto-scroll to the bottom
-        };
+            // Remove Honeypot
+            $('#remove-honeypot').click(function() {
+                $.ajax({
+                    url: '/remove',
+                    method: 'POST',
+                    success: function(response) {
+                        $('#honeypot-status').text(response.message).addClass('text-success');
+                    },
+                    error: function() {
+                        $('#honeypot-status').text('Failed to remove honeypot.').addClass('text-danger');
+                    }
+                });
+            });
 
-        eventSource.onerror = function() {
-            logsElement.innerHTML += '<br><span style="color: red;">Error: Unable to fetch logs</span>';
-            eventSource.close();
-        };
+            // Capture Traffic
+            $('#capture-traffic').click(function() {
+    $.ajax({
+        url: '/capture_traffic',
+        method: 'GET',
+        success: function(response) {
+            $('#traffic-status').text('Traffic Analysis Result:').removeClass('text-danger').addClass('text-success');
+            $('#traffic-info').text(`Traffic Type: ${response.traffic_type}`);
+            if (response.attacker_ip) {
+                $('#traffic-info').append(`<br>Attacker IP: ${response.attacker_ip}`);
+            }
+        },
+        error: function() {
+            $('#traffic-status').text('Failed to capture traffic.').removeClass('text-success').addClass('text-danger');
+        }
+    });
+});
+
+
+            // Stream Logs
+            function streamLogs() {
+                var eventSource = new EventSource('/logs');
+                eventSource.onmessage = function(event) {
+                    var logsContainer = $('#logs-container');
+                    logsContainer.append('<p>' + event.data + '</p>');
+                };
+            }
+            
+            // Refresh logs
+            $('#refresh-logs').click(function() {
+                $('#logs-container').empty();
+                streamLogs();
+            });
+
+            // Initially start streaming logs
+            streamLogs();
+        });
     </script>
 </body>
 </html>

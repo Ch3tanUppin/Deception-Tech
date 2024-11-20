@@ -1,19 +1,23 @@
 from flask import Flask, Response, render_template, request, jsonify
 import threading
-
 from backend.honeypot_manager import HoneypotManager
 from backend.response_manager import ResponseManager
+from backend.traffic_analyzer import TrafficAnalyzer
+from backend.ai_model import MockAIModel
 
 app = Flask(__name__)
 
 # Initialize the HoneypotManager and ResponseManager
 honeypot_manager = HoneypotManager(
-    container_name="cowrie/cowrie", #add this from your env
-    container_id="" # get the id from docker
+    container_name="busy_krich",
+    container_id="6bfeafa97ecd6d506200c2e53e1fa718dd452137e6c16fa77c12d78416ff0a7b"
 )
 
-# Pass the HoneypotManager instance to ResponseManager
 response_manager = ResponseManager(honeypot_manager=honeypot_manager)
+
+# Initialize Traffic Analyzer
+ai_model = MockAIModel()  # You can replace this with your actual AI model
+traffic_analyzer = TrafficAnalyzer(ai_model=ai_model, honeypot_manager=honeypot_manager, response_manager=response_manager)
 
 @app.route('/')
 def home():
@@ -54,6 +58,15 @@ def remove_honeypot():
     """
     honeypot_manager.remove_honeypot()
     return jsonify({"message": "Honeypot removed successfully!"})
+
+@app.route('/capture_traffic', methods=['GET'])
+def capture_traffic():
+    """
+    Endpoint to capture traffic and analyze it.
+    """
+    # Capture traffic using TrafficAnalyzer
+    traffic_analyzer.capture_traffic()
+    return jsonify({"message": "Traffic capture started."})
 
 @app.route('/respond', methods=['POST'])
 def handle_threat():
