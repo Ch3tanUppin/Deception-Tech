@@ -1,0 +1,10 @@
+version: '3'
+services:
+  honeypot:
+    image: cowrie/cowrie
+    container_name: honeypot
+    volumes:
+      - ./honeypot/logs:/cowrie/logs
+    ports:
+      - "123:123"  # You can expose the SSH port or any other required port
+    restart: always

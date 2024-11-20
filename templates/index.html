@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DashBoard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #212529;
+        }
+        #logs {
+            width: 80%;
+            height: 80vh;
+            margin: auto;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background: #fff;
+            overflow-y: scroll;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center;">Adaptive System</h1>
+    <div id="logs"></div>
+
+    <script>
+        const logsElement = document.getElementById('logs');
+        const eventSource = new EventSource('/logs');
+
+        eventSource.onmessage = function(event) {
+            logsElement.innerHTML += event.data + '<br>';
+            logsElement.scrollTop = logsElement.scrollHeight; // Auto-scroll to the bottom
+        };
+
+        eventSource.onerror = function() {
+            logsElement.innerHTML += '<br><span style="color: red;">Error: Unable to fetch logs</span>';
+            eventSource.close();
+        };
+    </script>
+</body>
+</html>
