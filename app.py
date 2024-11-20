@@ -8,8 +8,8 @@ app = Flask(__name__)
 
 # Initialize the HoneypotManager and ResponseManager
 honeypot_manager = HoneypotManager(
-    container_name="cowrie/cowrie",
-    container_id="7b7906c708b448afbf85e9941f10f2c1a8956136700396c0e8ee788a052a62c9"
+    container_name="cowrie/cowrie", #add this from your env
+    container_id="" # get the id from docker
 )
 
 # Pass the HoneypotManager instance to ResponseManager
